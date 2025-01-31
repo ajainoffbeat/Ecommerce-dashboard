@@ -1,62 +1,148 @@
 import Header from "@/components/header"
 import { SidebarInset } from "@/components/ui/sidebar"
 import { Line, LineChart, ResponsiveContainer, CartesianGrid, BarChart, Bar, XAxis, YAxis, Tooltip, Pie, PieChart, Cell, AreaChart, Area, Legend, LabelList } from "recharts"
-import { Activity, CreditCard, DollarSign, Package, ShoppingCart, Users } from 'lucide-react'
-
+import { AwardIcon,Package, DollarSign, ShoppingCart } from 'lucide-react'
+import { useEffect,useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import StatisticCard from "@/components/widgets/statistic-card"
 import PieChartCard from "@/components/widgets/piechart-card"
-import { revenueData, ordersData, productsData, activeCustomersData, COLORS, chartData, recentOrders } from "@/constant/widget";
+import { ordersData, activeCustomersData, COLORS, chartData, recentOrders, CATEGORY_COLORS, customerAcquisition, averageOrderValue, topProducts, retentionRate, productsData, revenueData } from "@/constant/widget";
+import { generateRandomValue } from "@/helper/generateRandomNumber";
 
-const salesByCategory = [
-  { name: "Electronics", value: 40 },
-  { name: "Clothing", value: 25 },
-  { name: "Home & Garden", value: 20 },
-  { name: "Books", value: 15 }
-]
-
-const customerAcquisition = [
-  { month: "Jan", organic: 800, paid: 700, referral: 300 },
-  { month: "Feb", organic: 1000, paid: 900, referral: 700 },
-  { month: "Mar", organic: 1200, paid: 600, referral: 1000 },
-  { month: "Apr", organic: 900, paid: 1150, referral: 700 },
-  { month: "May", organic: 1400, paid: 900, referral: 1300 },
-  { month: "Jun", organic: 1500, paid: 1000, referral: 900 }
-]
-
-const averageOrderValue = [
-  { month: "Jan", value: 120 },
-  { month: "Feb", value: 125 },
-  { month: "Mar", value: 132 },
-  { month: "Apr", value: 130 },
-  { month: "May", value: 139 },
-  { month: "Jun", value: 145 }
-]
-
-const topProducts = [
-  { name: "Iphone 15", sales: 1200 },
-  { name: "Samsung S24", sales: 980 },
-  { name: "Nike Dunk Low", sales: 850 },
-  { name: "Realme NARZO", sales: 780 },
-  { name: "New Balance 9060", sales: 650 },
-]
-
-const retentionRate = [
-  { month: "Jan", rate: 45 },
-  { month: "Feb", rate: 60 },
-  { month: "Mar", rate: 52 },
-  { month: "Apr", rate: 79 },
-  { month: "May", rate: 58 },
-  { month: "Jun", rate: 67 }
-]
-
-
-const CATEGORY_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
 
 export default function Dashboard() {
+  const [salesByCategory, setSalesByCategory] = useState([
+    { name: "Electronics", value: generateRandomValue(10,90) },
+    { name: "Clothing", value: generateRandomValue(10,90) },
+    { name: "Home & Garden", value: generateRandomValue(10,90) },
+    { name: "Books", value: generateRandomValue(10,90) },
+  ]);
+
+  const [revenueByChannel, setRevenueByChannel] = useState([
+    { name: 'Online Store', value: 4000 },
+    { name: 'Marketplace', value: 3000 },
+    { name: 'Social Media', value: 2000 },
+    { name: 'Retail', value: 1000 },
+  ]);
+
+  const [chartRevenueData, setChartRevenueData] = useState([...revenueData]);
+  const [chartOrderData, setChartOrdersData] = useState([...ordersData]);
+  const [chartProductsData, setChartProductsData] = useState([...productsData]);
+  const [averageOrderValueData, setAverageOrderValueData] = useState([...averageOrderValue]);
+
+  useEffect(()=>{
+    setChartRevenueData(getLastSixMonthsRevenue(chartRevenueData));
+    setChartOrdersData(getLastSixMonthsRevenue(chartOrderData));
+    setChartProductsData(getLastSixMonthsRevenue(chartProductsData));
+    setAverageOrderValueData(getLastSixMonthsRevenue(averageOrderValueData));
+  },[])
+
+  useEffect(() => { 
+    const revenueTimer = setInterval(() => {
+      if (chartRevenueData?.length > 0) {
+        setChartRevenueData((prevData: any) =>
+          prevData.map((item: any, index: number) =>
+            index === 5
+              ? {
+                  ...item,
+                  value: item.value + generateRandomValue(10, 250),
+                }
+              : item
+          )
+        );
+      }
+    }, 5000);
+
+    const orderTimer = setInterval(() => {
+      if (ordersData?.length > 0) {
+        setChartOrdersData((prevData: any) =>
+          prevData.map((item: any, index: number) =>
+            index === 5
+              ? {
+                  ...item,
+                  value: item.value + generateRandomValue(1, 5),
+                }
+              : item
+          )
+        );
+      }
+    }, 5000);
+    const averageOrderTimer = setInterval(() => {
+      if (averageOrderValueData?.length > 0) {
+        setAverageOrderValueData((prevData: any) =>
+          prevData.map((item: any, index: number) =>
+            index === 5
+              ? {
+                  ...item,
+                  value: item.value + generateRandomValue(1,5),
+                }
+              : item
+          )
+        );
+      }
+    }, 5000);
+
+    return () =>{
+       clearInterval(revenueTimer);
+       clearInterval(orderTimer);
+       clearInterval(averageOrderTimer);
+      }
+  }, [revenueData]);
+
+  useEffect(() => {
+    const productTimer = setInterval(() => {
+      if (chartProductsData?.length > 0) {
+        setChartProductsData((prevData: any) =>
+          prevData.map((item: any, index: number) =>
+            index === 5
+              ? {
+                  ...item,
+                  value: item.value + generateRandomValue(1, 20),  
+                }
+              : item
+          )
+        );
+      }
+    }, 5000);
+    const intervalSales = setInterval(() => {
+      setSalesByCategory((prevData) =>
+        prevData.map((item) => ({
+          ...item,
+          value: generateRandomValue(10,90),
+        }))
+      );
+    }, 5000);
+    const intervalChannel = setInterval(() => {
+      setRevenueByChannel((prevData) =>
+        prevData.map((item) => ({
+          ...item,
+          value: generateRandomValue(10,90),
+        }))
+      );
+    }, 5000);
+    return () => {
+       clearInterval(productTimer);
+       clearInterval(intervalSales);
+       clearInterval(intervalChannel);
+    }
+    
+  },[])
+  function getLastSixMonthsRevenue(revenueDataForChart : any) {
+    const currentMonthIndex = new Date().getMonth();
+    const lastSixMonths : any = [];
+  
+    for (let i = 5; i >= 0; i--) {
+      const monthIndex = (currentMonthIndex - i + 12) % 12;
+      let value = revenueDataForChart[monthIndex];
+      lastSixMonths.push(value);
+    }
+    
+    return lastSixMonths;
+  }
+  
+  
   return (
     <SidebarInset>
       <Header />
@@ -71,12 +157,12 @@ export default function Dashboard() {
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatisticCard title="Total Revenue" icon={DollarSign} data={revenueData} dataKey="value" unit="$" />
-                <StatisticCard title="Orders" icon={ShoppingCart} data={ordersData} dataKey="value" />
-                <StatisticCard title="Products Sold" icon={Package} data={productsData} dataKey="value" />
+              { revenueData?.length > 0 && <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatisticCard title="Total Revenue" icon={DollarSign} data={chartRevenueData} dataKey="value" unit="$" />
+                <StatisticCard title="Orders" icon={ShoppingCart} data={chartOrderData} dataKey="value" />
+                <StatisticCard title="Products Sold" icon={Package} data={chartProductsData} dataKey="value" />
                 <PieChartCard title="Visitor Activity Status" data={activeCustomersData} colors={COLORS} />
-              </div>
+              </div>}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 <Card className="col-span-4">
                   <CardHeader>
@@ -166,7 +252,7 @@ export default function Dashboard() {
                             dataKey="value"
                           >
                             {salesByCategory.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                              <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} /> 
                             ))}
                           </Pie>
                           <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '12px' }} margin={{ top: 10, left: 0, right: 0, bottom: 0 }} />
@@ -242,7 +328,7 @@ export default function Dashboard() {
                   <CardContent>
                     <div className="h-[200px]">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={averageOrderValue}>
+                        <AreaChart data={averageOrderValueData}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="month" />
                           <YAxis />
@@ -301,12 +387,7 @@ export default function Dashboard() {
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
-                            data={[
-                              { name: 'Online Store', value: 4000 },
-                              { name: 'Marketplace', value: 3000 },
-                              { name: 'Social Media', value: 2000 },
-                              { name: 'Retail', value: 1000 },
-                            ]}
+                            data={revenueByChannel}
                             cx="50%"
                             cy="50%"
                             outerRadius={80}
